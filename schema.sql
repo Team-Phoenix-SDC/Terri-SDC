@@ -1,3 +1,7 @@
+-- teresas-mbp:Terri-SDC teresagobble$ postgres
+-- postgres does not know where to find the server configuration file.
+-- You must specify the --config-file or -D invocation option or set the PGDATA environment variable.
+-- teresas-mbp:Terri-SDC teresagobble$ psql -U teresagobble postgres
 
 -- YOUR CODE GOES HERE
 -- CREATE YOUR DATABASE
@@ -15,15 +19,18 @@ USE SDCDatabase;
 DROP TABLE IF EXISTS product;
 
 CREATE TABLE product (
-  productID INT PRIMARY KEY,
-  productName VARCHAR(120),
-  productSlogan VARCHAR(140),
-  productDescription VARCHAR(1000),
-  productCategory VARCHAR(60),
-  productPrice INT
+  id INT,
+  "name" VARCHAR(120),
+  slogan VARCHAR(140),
+  "description" VARCHAR(1000),
+  category VARCHAR(60),
+  default_price INT
 );
 
-copy product(productID, productName, productSlogan, productDescription, productCategory, productPrice)
+-- use of primary/reference keys
+  -- id INT PRIMARY KEY,
+
+copy product(id, name, slogan, description, category, default_price)
 FROM '/Users/teresagobble/Desktop/Terri-SDC/product.csv'
 DELIMITER ','
 CSV HEADER;
@@ -34,16 +41,18 @@ CSV HEADER;
 DROP TABLE IF EXISTS style;
 
 CREATE TABLE style (
-  styleID INT PRIMARY KEY,
+  id INT,
   productID INT,
-  styleName VARCHAR(120),
-  stylePrice INT,
-  productPrice INT,
-  defaultStyle INT,
-  styleProductID INTEGER REFERENCES product (productID)
+  "name" VARCHAR(120),
+  sale_price INT,
+  original_price INT,
+  default_style INT
 );
+-- use of primary/reference keys
+    -- id INT PRIMARY KEY,
+    -- styleProductID INTEGER REFERENCES product (id)
 
-copy style(styleID, productID, styleName, stylePrice, productPrice, defaultStyle)
+copy style(id, productID, name, sale_price, original_price, default_style)
 FROM '/Users/teresagobble/Desktop/Terri-SDC/styles.csv'
 DELIMITER ','
 NULL AS 'null'
@@ -55,15 +64,100 @@ CSV HEADER;
 DROP TABLE IF EXISTS photo;
 
 CREATE TABLE photo (
-  photoID INT,
+  id INT,
   styleID INT,
-  photoURL VARCHAR(300),
-  thumbnailURL VARCHAR(300)
+  "url" VARCHAR(300),
+  thumbnail_url VARCHAR(300)
 );
   -- photoProductID INTEGER REFERENCES style (styleID)
 
-copy photo(photoID, styleID, photoURL, thumbnailURL)
+copy photo(id, styleID, url, thumbnail_url)
 FROM '/Users/teresagobble/Desktop/Terri-SDC/photos.csv'
 delimiter ','
 quote E'\b'
 CSV HEADER;
+
+
+
+-- add indexing to reduce query response times
+
+DROP TABLE IF EXISTS feature;
+
+CREATE TABLE feature (
+  featureID INT,
+  productID INT,
+  featureType VARCHAR(50),
+  featureValue1 VARCHAR(50),
+  featureValue2 VARCHAR(50)
+);
+  -- photoProductID INTEGER REFERENCES style (styleID)
+
+copy feature(featureID, productID, featureType, featureValue1, featureValue2)
+FROM '/Users/teresagobble/Desktop/Terri-SDC/features.csv'
+delimiter ','
+NULL AS 'null'
+quote E'\b'
+CSV HEADER;
+
+
+
+DROP TABLE IF EXISTS temporaryData;
+  CREATE TABLE temporaryData (
+    lumpedField TEXT
+  );
+
+COPY temporaryData FROM '/Users/teresagobble/Desktop/Terri-SDC/features.csv' WITH
+NULL AS 'null'
+-- quote E'\b'
+CSV HEADER delimiter '#';
+
+DROP TABLE IF EXISTS feature;
+
+SELECT
+split_part(lumpedField, ',', 1 ) AS featureID,
+split_part(lumpedField, ',', 2 ) AS productID,
+split_part(lumpedField, ',', 3 ) AS featureType,
+split_part(lumpedField, ',', 4 ) AS featureValues1,
+split_part(lumpedField, ',', 5 ) AS featureValues2
+INTO feature
+FROM temporaryData
+;
+
+
+-- CREATE TABLE feature (
+--   featureID INT,
+--   productID INT,
+--   featureType VARCHAR(50),
+--   featureValue1 VARCHAR(50),
+--   featureValue2 VARCHAR(50)
+-- );
+--   -- photoProductID INTEGER REFERENCES style (styleID)
+
+-- copy feature(featureID, productID, featureType, featureValue1, featureValue2)
+-- FROM '/Users/teresagobble/Desktop/Terri-SDC/features.csv'
+-- delimiter ','
+-- NULL AS 'null'
+-- quote E'\b'
+-- CSV HEADER;
+
+
+
+
+
+
+-- CREATE TABLE feature (
+--   featureID INT,
+--   productID INT,
+--   featureType VARCHAR(50),
+--   featureValue1 VARCHAR(50),
+--   featureValue2 VARCHAR(50)
+-- );
+--   -- photoProductID INTEGER REFERENCES style (styleID)
+
+-- copy feature(featureID, productID, featureType, featureValue1, featureValue2)
+-- FROM '/Users/teresagobble/Desktop/Terri-SDC/features.csv'
+-- delimiter ','
+-- NULL AS 'null'
+-- quote E'\b'
+-- CSV HEADER;
+
