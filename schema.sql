@@ -14,6 +14,9 @@ CREATE DATABASE SDCDatabase;
 
 USE SDCDatabase;
 
+
+-- CREATE INDEX friends_city_desc ON friends(city DESC);
+
 -- "Camo Onesie","Blend in to your crowd","The So Fatigues will wake you up and fit you in. This high energy camo will have you blending in to even the wildest surroundings.","Jackets",140
 
 DROP TABLE IF EXISTS product;
@@ -24,7 +27,7 @@ CREATE TABLE product (
   slogan VARCHAR(140),
   "description" VARCHAR(1000),
   category VARCHAR(60),
-  default_price INT
+  default_price INT,
 );
 
 -- use of primary/reference keys
@@ -46,11 +49,15 @@ CREATE TABLE style (
   "name" VARCHAR(120),
   sale_price INT,
   original_price INT,
-  default_style INT
+  default_style INT,
+  styleProductID INTEGER REFERENCES product (id)
 );
 -- use of primary/reference keys
     -- id INT PRIMARY KEY,
-    -- styleProductID INTEGER REFERENCES product (id)
+    --
+
+DROP INDEX styles_index;
+CREATE INDEX styles_index ON style (productID);
 
 copy style(id, productID, name, sale_price, original_price, default_style)
 FROM '/Users/teresagobble/Desktop/Terri-SDC/styles.csv'
@@ -71,10 +78,13 @@ CREATE TABLE photo (
 );
   -- photoProductID INTEGER REFERENCES style (styleID)
 
+
+CREATE INDEX photos_index ON photo (styleID);
+
 copy photo(id, styleID, url, thumbnail_url)
 FROM '/Users/teresagobble/Desktop/Terri-SDC/photos.csv'
-delimiter ','
 quote E'\b'
+delimiter ','
 CSV HEADER;
 
 
